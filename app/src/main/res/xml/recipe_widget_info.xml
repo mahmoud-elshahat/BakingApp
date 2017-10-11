@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="pharaoh.com.bakingapp.ui.Widget.RecipeWidgetConfigureActivity"
+    android:initialKeyguardLayout="@layout/recipe_widget"
+    android:initialLayout="@layout/recipe_widget"
+    android:minHeight="40dp"
+    android:minWidth="250dp"
+    android:previewImage="@drawable/example_appwidget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="864000000"
+    android:widgetCategory="home_screen">
+
+</appwidget-provider>
