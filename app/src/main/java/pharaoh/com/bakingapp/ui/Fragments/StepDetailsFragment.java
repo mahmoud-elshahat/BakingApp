@@ -11,9 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -60,6 +62,8 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
     FrameLayout f1;
     @BindView(R.id.f2)
     FrameLayout f2;
+    @BindView(R.id.image)
+    ImageView imageView;
 
     FragmentOneListener listener;
     ArrayList<Step> steps;
@@ -108,40 +112,35 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             next.setVisibility(View.VISIBLE);
         }
 
-
-        String videoUrl="";
-        if(steps.get(currentIndex).getVideoURL().isEmpty() && steps.get(currentIndex).getThumbnailURL().isEmpty())
-        {
+        releasePlayer();
+        if (steps.get(currentIndex).getVideoURL().isEmpty() && steps.get(currentIndex).getThumbnailURL().isEmpty()) {
             playerView.setVisibility(GONE);
+            imageView.setVisibility(GONE);
             empty.setVisibility(View.VISIBLE);
-        }
-        else if(steps.get(currentIndex).getVideoURL().isEmpty())
-        {
-            videoUrl=steps.get(currentIndex).getVideoURL();
+        } else if (!steps.get(currentIndex).getVideoURL().isEmpty()) {
+            String videoUrl = steps.get(currentIndex).getVideoURL();
             empty.setVisibility(View.GONE);
+            imageView.setVisibility(GONE);
             playerView.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            videoUrl=steps.get(currentIndex).getVideoURL();
-            empty.setVisibility(View.GONE);
-            playerView.setVisibility(View.VISIBLE);
-
-        }
-
-        if(player!=null)
-        {
-            releasePlayer();
-        }
-        if(!videoUrl.isEmpty())
-        {
             initializePlayer(Uri.parse(videoUrl));
+
+        } else{
+            String imageUrl = steps.get(currentIndex).getVideoURL();
+            empty.setVisibility(View.GONE);
+            playerView.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+
+            Glide.with(getActivity())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.details_not_found)
+                    .into(imageView);
         }
 
         hideSystemUi();
         description.setText(steps.get(currentIndex).getDescription());
         current.setText((currentIndex + 1) + "/" + steps.size());
     }
+
     public void initializePlayer(Uri uri) {
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(
@@ -153,39 +152,43 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             player.prepare(mediaSource, true, false);
         }
     }
+
     private void releasePlayer() {
         if (player != null) {
             player.release();
             player = null;
         }
     }
+
     private MediaSource buildMediaSource(Uri uri) {
         return new ExtractorMediaSource(uri,
                 new DefaultHttpDataSourceFactory("ua"),
                 new DefaultExtractorsFactory(), null, null);
     }
+
     @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if(tablet)
+        if (tablet)
             return;
 
         hideSystemUi();
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            f1.setLayoutParams(new LinearLayout.LayoutParams(width,height ));
+            f1.setLayoutParams(new LinearLayout.LayoutParams(width, height));
             f2.setLayoutParams(new LinearLayout.LayoutParams(width, height));
 
-        }
-        else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             f1.setLayoutParams(new LinearLayout.LayoutParams(height, width / 2));
             f2.setLayoutParams(new LinearLayout.LayoutParams(height, width / 2));
         }
 
     }
+
     public void setFragmentListener(FragmentOneListener listener) {
         this.listener = listener;
     }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -197,10 +200,11 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             show();
         }
     }
+
     @Override
     public void onStart() {
         super.onStart();
-        if(tablet)
+        if (tablet)
             return;
 
         ViewTreeObserver vto = layout.getViewTreeObserver();
@@ -216,19 +220,19 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
                     height = layout.getMeasuredHeight();
                     f1.setLayoutParams(new LinearLayout.LayoutParams(width, height));
                     f2.setLayoutParams(new LinearLayout.LayoutParams(width, height));
-                }
-                else
-                {
+                } else {
                     height = layout.getMeasuredWidth();
                     width = layout.getMeasuredHeight();
                 }
             }
         });
     }
+
     @Override
     public void onResume() {
         super.onResume();
     }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -236,6 +240,7 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             releasePlayer();
         }
     }
+
     @Override
     public void onStop() {
         super.onStop();
@@ -243,6 +248,7 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             releasePlayer();
         }
     }
+
     @SuppressLint("InlinedApi")
     private void hideSystemUi() {
         playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -253,6 +259,13 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         empty.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+        imageView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY

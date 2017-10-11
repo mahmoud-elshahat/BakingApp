@@ -51,6 +51,7 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
 
     class RecyclerHolder extends RecyclerView.ViewHolder {
         TextView name,quantity,measure;
+
         RecyclerHolder(View itemView) {
             super(itemView);
             name=(TextView) itemView.findViewById(R.id.name);

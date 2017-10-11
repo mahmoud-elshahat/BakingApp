@@ -24,12 +24,20 @@
                 android:text="There is no attached image or video"
                 android:textSize="22sp"
                 android:textStyle="bold"
+                android:padding="16dp"
                 android:visibility="gone" />
 
             <com.google.android.exoplayer2.ui.SimpleExoPlayerView
                 android:id="@+id/playerView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/image"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/details_not_found"/>
 
         </FrameLayout>
 
