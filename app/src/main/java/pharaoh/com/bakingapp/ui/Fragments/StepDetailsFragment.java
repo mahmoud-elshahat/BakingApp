@@ -132,7 +132,7 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
             initializePlayer(Uri.parse(videoUrl));
 
         } else{
-            String imageUrl = steps.get(currentIndex).getVideoURL();
+            String imageUrl = steps.get(currentIndex).getThumbnailURL();
             empty.setVisibility(View.GONE);
             playerView.setVisibility(View.GONE);
             imageView.setVisibility(View.VISIBLE);

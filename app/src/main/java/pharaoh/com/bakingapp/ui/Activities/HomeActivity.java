@@ -39,6 +39,8 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
     @BindView(R.id.reload)
     Button reload;
 
+    int position;
+
     private CountingIdlingResource mIdlingResource= new CountingIdlingResource("Loading_Data");
 
 
@@ -113,6 +115,7 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
             recycler.setLayoutManager(gridLayoutManager);
         }
         recycler.setAdapter(new RecipesAdapter(HomeActivity.this,recipes));
+        recycler.getLayoutManager().scrollToPosition(position);
     }
 
 
@@ -128,6 +131,16 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putParcelableArrayList("recipes",recipes);
+        if(recycler.getTag().equals("tablet"))
+        {
+            outState.putInt("position",((GridLayoutManager)recycler.getLayoutManager())
+                    .findFirstCompletelyVisibleItemPosition());
+        }
+        else
+        {
+            outState.putInt("position",((LinearLayoutManager)recycler.getLayoutManager())
+                    .findFirstCompletelyVisibleItemPosition());
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -135,6 +148,7 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         recipes=savedInstanceState.getParcelableArrayList("recipes");
+        position=savedInstanceState.getInt("position");
         renderRecyclerView();
         bar.setVisibility(GONE);
     }
@@ -147,4 +161,5 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
     public CountingIdlingResource getIdlingResource() {
         return mIdlingResource;
     }
+
 }
