@@ -23,8 +23,8 @@ import butterknife.ButterKnife;
 import pharaoh.com.bakingapp.Api.NetworkOperations;
 import pharaoh.com.bakingapp.Api.OnRequestFinishedListener;
 import pharaoh.com.bakingapp.IdlingResource.HomeIdlingResource;
-import pharaoh.com.bakingapp.data.Models.Recipe;
 import pharaoh.com.bakingapp.R;
+import pharaoh.com.bakingapp.data.Models.Recipe;
 import pharaoh.com.bakingapp.ui.Adapters.RecipesAdapter;
 import pharaoh.com.bakingapp.ui.RecyclerViewItemClickListener;
 import retrofit2.Response;
@@ -46,11 +46,14 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
         ButterKnife.bind(this);
 
-        mIdlingResource.increment();
-        NetworkOperations.getRecipes(this);
+        if(savedInstanceState == null)
+        {
+            mIdlingResource.increment();
+            NetworkOperations.getRecipes(this);
+        }
+
 
         recycler.addOnItemTouchListener(new RecyclerViewItemClickListener(HomeActivity.this, recycler, new RecyclerViewItemClickListener.OnItemClickListener() {
             @Override
@@ -90,6 +93,15 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
         recipes = (ArrayList<Recipe>) response.body();
 
         reload.setVisibility(GONE);
+        bar.setVisibility(GONE);
+
+        renderRecyclerView();
+
+        mIdlingResource.decrement();
+    }
+
+    public void renderRecyclerView()
+    {
         if(recycler.getTag().equals("tablet"))
         {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(HomeActivity.this, 3);
@@ -100,10 +112,7 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
             LinearLayoutManager gridLayoutManager = new LinearLayoutManager(HomeActivity.this,LinearLayoutManager.VERTICAL,false);
             recycler.setLayoutManager(gridLayoutManager);
         }
-        bar.setVisibility(GONE);
         recycler.setAdapter(new RecipesAdapter(HomeActivity.this,recipes));
-        mIdlingResource.decrement();
-
     }
 
 
@@ -116,6 +125,19 @@ public class HomeActivity extends AppCompatActivity implements OnRequestFinished
 
 
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("recipes",recipes);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        recipes=savedInstanceState.getParcelableArrayList("recipes");
+        renderRecyclerView();
+        bar.setVisibility(GONE);
+    }
 
     /**
      * Only called from test, creates and returns a new {@link HomeIdlingResource}.

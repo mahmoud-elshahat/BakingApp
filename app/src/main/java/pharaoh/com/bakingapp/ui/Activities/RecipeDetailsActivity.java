@@ -24,54 +24,67 @@ public class RecipeDetailsActivity extends AppCompatActivity implements Fragment
     StepDetailsFragment detailsFragment;
 
     StepFragment fragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_details);
 
-        detailFragment= (FrameLayout) findViewById(R.id.fragmentTwo);
-
-        Tablet=true;
-        Bundle extras=getIntent().getBundleExtra("bundle");
-        name=extras.getString("recipe_name");
+        detailFragment = (FrameLayout) findViewById(R.id.fragmentTwo);
+        Tablet = true;
+        Bundle extras = getIntent().getBundleExtra("bundle");
+        name = extras.getString("recipe_name");
         getSupportActionBar().setTitle(name);
-        steps=extras.getParcelableArrayList("steps");
-        extras.putBoolean("tablet",(detailFragment!=null));
+        steps = extras.getParcelableArrayList("steps");
+        extras.putBoolean("tablet", (detailFragment != null));
 
-        fragment=new StepFragment();
-        fragment.setFragmentListener(this);
-        fragment.setArguments(extras);
-        getFragmentManager().beginTransaction().add(R.id.fragmentOne, fragment).commit();
+        if (savedInstanceState == null) {
+            fragment = new StepFragment();
+            fragment.setFragmentListener(this);
+            fragment.setArguments(extras);
+            getFragmentManager().beginTransaction().add(R.id.fragmentOne, fragment).commit();
+            //checking if screen size greater than 600dp
+            if (detailFragment == null) {
+                Tablet = false;
+            } else {
+                this.setStep(0, steps);
+            }
+        } else {
+            fragment= (StepFragment) getFragmentManager().getFragment(savedInstanceState,"main");
+            fragment.setFragmentListener(this);
 
-        //checking if screen size greater than 600dp
-        if(detailFragment == null)
-        {
-            Tablet=false;
+
+            if (!fragment.isAdded())
+            getFragmentManager().beginTransaction().add(R.id.fragmentOne, fragment).commit();
+
+            if(detailsFragment !=null)
+            {
+                detailsFragment= (StepDetailsFragment) getFragmentManager().getFragment(savedInstanceState,"detail");
+                getFragmentManager().beginTransaction().replace(R.id.fragmentTwo, detailsFragment).commit();
+            }
         }
-        else {
-            this.setStep(0,steps);
-        }
+
 
 
 
     }
 
     @Override
-    public void setStep(int index , ArrayList<Step> steps) {
-
+    public void setStep(int index, ArrayList<Step> steps) {
         if (!Tablet) {
             Intent intent = new Intent(this, StepDetailsActivity.class);
             intent.putExtra("steps", steps);
-            intent.putExtra("current",index);
-            intent.putExtra("name",name);
+            intent.putExtra("current", index);
+            intent.putExtra("name", name);
             startActivity(intent);
         } else {
             detailsFragment = new StepDetailsFragment();
             Bundle bundle = new Bundle();
             bundle.putParcelableArrayList("steps", steps);
             detailsFragment.setFragmentListener(this);
-            bundle.putInt("current",index);
-            bundle.putBoolean("tablet",true);
+            bundle.putInt("current", index);
+            bundle.putBoolean("tablet", true);
             detailsFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.fragmentTwo, detailsFragment).commit();
         }
@@ -79,10 +92,33 @@ public class RecipeDetailsActivity extends AppCompatActivity implements Fragment
 
     @Override
     public void setCurrent(int index) {
-        if(Tablet)
-        {
+        if (Tablet) {
             fragment.updateView(index);
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getFragmentManager().putFragment(outState, "main", fragment);
+
+        if (Tablet && detailFragment!=null)
+        {
+            try{
+                getFragmentManager().putFragment(outState, "detail", detailsFragment);
+            }catch (NullPointerException e) {}
+
+        }
+
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (detailFragment == null) {
+            Tablet = false;
+        }
+    }
 }

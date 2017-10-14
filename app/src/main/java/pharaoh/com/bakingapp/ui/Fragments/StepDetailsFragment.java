@@ -80,17 +80,24 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.details_fragment, container, false);
         ButterKnife.bind(this, root);
-
-        Bundle bundle = getArguments();
-        if (!bundle.containsKey("steps")) {
-            return root;
+        Bundle bundle;
+        if(savedInstanceState == null)
+        {
+            bundle= getArguments();
+            steps = bundle.getParcelableArrayList("steps");
+            currentIndex = bundle.getInt("current");
+            tablet = bundle.getBoolean("tablet");
         }
-
-        steps = bundle.getParcelableArrayList("steps");
-        currentIndex = bundle.getInt("current");
-        tablet = bundle.getBoolean("tablet");
-
+        else
+        {
+            steps = savedInstanceState.getParcelableArrayList("steps");
+            currentIndex = savedInstanceState.getInt("index");
+            tablet = savedInstanceState.getBoolean("tablet");
+        }
         show();
+
+
+
         back.setOnClickListener(this);
         next.setOnClickListener(this);
 
@@ -193,9 +200,13 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.back_button) {
+            if(currentIndex ==0)
+                return;
             currentIndex--;
             show();
         } else if (id == R.id.next_button) {
+            if(currentIndex==steps.size()-1)
+                return;
             currentIndex++;
             show();
         }
@@ -251,6 +262,10 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
 
     @SuppressLint("InlinedApi")
     private void hideSystemUi() {
+        if(tablet)
+        {
+            return;
+        }
         playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -272,6 +287,14 @@ public class StepDetailsFragment extends android.app.Fragment implements View.On
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("index",currentIndex);
+        outState.putParcelableArrayList("steps",steps);
+        outState.putBoolean("tablet",tablet);
     }
 
 
