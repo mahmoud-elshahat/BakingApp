@@ -57,17 +57,14 @@ public class StepFragment extends android.app.Fragment {
         if(savedInstanceState ==null)
         {
             Bundle extra = getArguments();
-
             ingredients = extra.getParcelableArrayList("ingredients");
             tablet=extra.getBoolean("tablet",false);
             steps = extra.getParcelableArrayList("steps");
-
 
             index=0;
         }
         else
         {
-
             ingredients = savedInstanceState.getParcelableArrayList("ingredients");
             tablet=savedInstanceState.getBoolean("tablet",false);
             steps = savedInstanceState.getParcelableArrayList("steps");
@@ -75,11 +72,10 @@ public class StepFragment extends android.app.Fragment {
 
             x1=savedInstanceState.getInt("x1");
             x2=savedInstanceState.getInt("x2");
-
         }
+        trackers=new int[steps.size()];
         if(tablet)
         {
-            trackers=new int[steps.size()];
             trackers[index]=1;
         }
 
@@ -112,8 +108,10 @@ public class StepFragment extends android.app.Fragment {
                     }
                 })
         );
-        updateView(index);
-        listener.setStep(index, steps);
+        if(tablet){
+            updateView(index);
+            listener.setStep(index, steps);
+        }
 
         return root;
     }
